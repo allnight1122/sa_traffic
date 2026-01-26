@@ -1,5 +1,7 @@
 # Optimal control of traffic signals using quantum annealing
 
+量子アニーリング系論文検証用実装
+
 ## 文献情報
 
 タイトル: Optimal control of traffic signals using quantum annealing
@@ -17,7 +19,9 @@
 
 ### simulator.py
 
-後ほど記述
+`simulation()`でシミュレーションのメインループを実行する.
+
+その他後ほど記述
 
 ### graph.py
 
