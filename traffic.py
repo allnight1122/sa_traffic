@@ -61,15 +61,20 @@ class NodeTraffic:
             self.mode = mode
 
     def add_vehicle(self, direction: int, turn: str):
-        """指定方位のキューに車両を追加する (turn は希望進行方向)"""
-        # 仕様に基づき、turnは "straight", "right", "left" のみ受け入れる
+        """
+        指定方位のキューに車両を追加する 
+        
+        - `direction` は親友方向であり, 1:北, 2:南, 3:東, 4:西
+        - `turn` は希望進行方向であり, `"straight"`, `"right"`, `"left"`の文字列を受け入れる
+        """
         if direction in self.queues and turn in ["straight", "right", "left"]:
             self.queues[direction].append(turn)
 
     def flow_out(self, direction: int, allowed_turns: list[str]) -> dict[str, int]:
         """
         指定方位から許可された進行方向の車両を、flow_limit 台まで順番に流す。
-        （FIFO および A案：動作に関わらず到着順を優先）
+
+        車の流し方はFIFO
         """
         result: dict[str, int] = Counter()
         limit = self.flow_limit_value
