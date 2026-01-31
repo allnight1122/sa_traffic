@@ -3,6 +3,7 @@ from traffic import *
 from typing import Dict, Tuple, List, Any
 import numpy as np
 import dimod
+from param import SimulationParams
 
 
 MODE_KIND=6
@@ -10,17 +11,6 @@ MODE_KIND=6
 モードの種類の数を示す定数
 """
 
-LAMBDA1, LAMBDA2, LAMBDA3 = 1, 60, 1e6
-"""
-それぞれの項にかかる定数
-"""
-
-LAMBDA2T, LAMBDA2F=0.7, 0.3
-"""
-q2の項にかかる定数. 論文中のlambda3, lambda3'
-
-LAMBDA2Tをprime付きとして扱う
-"""
 
 def get_flowable_count(node_traffic: NodeTraffic, mode: int):
     """
@@ -46,7 +36,7 @@ def get_flowable_count(node_traffic: NodeTraffic, mode: int):
             
     return total_count
 
-def q1(edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> np.array:
+def q1( edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo, lambda_1:float) -> np.array:
     matrix_length=mapinfo.width()*mapinfo.height()*MODE_KIND
     q_matrix=np.zeros((matrix_length, matrix_length), dtype=float)
 
@@ -64,7 +54,7 @@ def q1(edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> np.array:
 
             c_ij = get_flowable_count(node_traffic, mode)
             k=node_id*MODE_KIND+j
-            q_matrix[k,k]=-LAMBDA1*c_ij
+            q_matrix[k,k]=-lambda_1*c_ij
 
     return q_matrix
 
@@ -86,7 +76,8 @@ TAU_THRESHOLD = 2.0
 元論文$t mod T approx 0$を判定するための許容範囲
 """
 
-def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> np.array:
+def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo,
+        lambda_2, lambda2t, lambda2f) -> np.array:
     """
     Q2(論文準拠)の計算をするメソッド
     """
@@ -145,12 +136,12 @@ def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) ->
 
                 c_neighbor=get_flowable_count(neighbor_id, preferred_mode)
                 # 重み(元論文lambda3 or lambda3')
-                weighting = LAMBDA2T if is_prime else LAMBDA2F
+                weighting = lambda2t if is_prime else lambda2f
 
                 k1=node_id * MODE_KIND + (mode_j - 1)
                 k2 = neighbor_id * MODE_KIND + (preferred_mode - 1)
 
-                val = -LAMBDA2 * c_ij * weighting * c_neighbor
+                val = -lambda_2 * c_ij * weighting * c_neighbor
 
                 q_matrix[k1, k2] += val/2
                 q_matrix[k2, k1] += val/2
@@ -165,7 +156,7 @@ def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) ->
 
     return q_matrix
 
-def q3(edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> np.array:
+def q3(edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo, lambda_3) -> np.array:
     matrix_length=mapinfo.width()*mapinfo.height()*MODE_KIND
     
     q_matrix=np.zeros((matrix_length, matrix_length), dtype=float)
@@ -176,9 +167,9 @@ def q3(edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> np.array:
         for j in range(start_idx, end_idx):
             for k in range(start_idx, end_idx):
                 if(j == k):
-                    q_matrix[j, k]+= -LAMBDA3
+                    q_matrix[j, k]+= -lambda_3
                 else: 
-                    q_matrix[j, k]+= LAMBDA3
+                    q_matrix[j, k]+= lambda_3
 
     return q_matrix
 
@@ -189,7 +180,7 @@ def q3(edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> np.array:
 
 
 
-def solve_main(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> Dict[int, int]:
+def solve_main(params: SimulationParams, time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> Dict[int, int]:
     """
     SAで解くメイン実装
     QUBO matrixの生成, dimodによるSA求解, node-mode形式の辞書オブジェクト生成までをおこない, 辞書を返す
@@ -205,9 +196,10 @@ def solve_main(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: Map
 
     q_matrix=np.zeros((matrix_length, matrix_length), dtype=float)
 
-    q_matrix+=q1(edge_traffics, node_traffics, mapinfo)
-    q_matrix+=q2(time, edge_traffics, node_traffics, mapinfo)
-    q_matrix+=q3(edge_traffics, node_traffics, mapinfo)
+    q_matrix+=q1(edge_traffics, node_traffics, mapinfo, params.lambda1)
+    q_matrix+=q2(time, edge_traffics, node_traffics, mapinfo, 
+                 params.lambda2, params.lambda2t, params.lambda2f)
+    q_matrix+=q3(edge_traffics, node_traffics, mapinfo, params.lambda3)
 
     qubo_dict={}
     rows, cols=np.nonzero(q_matrix)

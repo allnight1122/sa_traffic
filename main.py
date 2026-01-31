@@ -1,17 +1,19 @@
 from graph import *
 from simulator import simulation
 
+from param import SimulationParams
+
+def main(params: SimulationParams):
+    print("Running simulation with:")
+    simulation(params)
 
 
 
-def main():
-    print("Hello from sa-traffic!")
-    simulation()
-    # testOutput()
 
 
 if __name__ == "__main__":
-    main()
+    params = SimulationParams()   # ← 引数なしでOK
+    main(params)
 
 
 

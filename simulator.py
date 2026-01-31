@@ -7,6 +7,7 @@ from typing import Dict, Tuple, List, Any
 import pdb
 import visualize
 import solving.solve_sa
+from param import SimulationParams
 
 
 
@@ -109,11 +110,11 @@ def calc_step_timewasted(mapinfo: MapInfo, node_traffics: Dict) -> float:
 
 # --- メインロジック ---
 
-def simulation_init(width: int = 6, height: int = 6, car_count: int = 100) -> Tuple[MapInfo, Dict[Tuple[int, int], EdgeTraffic], Dict[int, NodeTraffic]]:
+def simulation_init(params: SimulationParams, width: int = 6, height: int = 6, ) -> Tuple[MapInfo, Dict[Tuple[int, int], EdgeTraffic], Dict[int, NodeTraffic]]:
     """
     シミュレーションの初期設定: マップ、交通オブジェクトの生成、車両の初期配置
     """  
-    mapinfo = MapInfo(width, height)
+    mapinfo = MapInfo(width, height, params.edge_length, params.edge_speed_limit_array)
 
     node_traffics: Dict[int, NodeTraffic] = {} 
     edge_traffics: Dict[Tuple[int, int], EdgeTraffic] = {}
@@ -129,7 +130,7 @@ def simulation_init(width: int = 6, height: int = 6, car_count: int = 100) -> Tu
         node_traffics[node_id] = NodeTraffic()
 
     # 車をランダムに設置する
-    for _ in range(car_count):
+    for _ in range(params.car_count):
         edge_key = random.choice(list(edge_traffics.keys()))
         edge_traffic = edge_traffics[edge_key]
 
@@ -204,7 +205,7 @@ def update_node_traffic(mapinfo: MapInfo, edge_traffics: Dict, node_traffics: Di
                 # 新たにエッジに車両を追加（位置 x=0.0）
                 edge_traffics[edge_key].vehicles.append(0.0)
 
-def update_signal_modes(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo):
+def update_signal_modes(params: SimulationParams,time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo):
     """
     信号モードを更新する。
     """
@@ -215,17 +216,17 @@ def update_signal_modes(time: int, edge_traffics: Dict, node_traffics: Dict, map
         
     # solve_main を実行して新しいモード配置を取得
     # (solve_main 内で q1, q2, q3 が呼び出され、dimod で解かれる)
-    new_modes = solving.solve_sa.solve_main(time, edge_traffics, node_traffics, mapinfo)
+    new_modes = solving.solve_sa.solve_main(params, time, edge_traffics, node_traffics, mapinfo)
         
         # 取得した辞書 {node_id: mode_id} を実際のノード状態に反映
     for node_id, mode_id in new_modes.items():
         if node_id in node_traffics:
             old_mode = node_traffics[node_id].mode
             node_traffics[node_id].mode = mode_id
-                
-            # モードが変わった場合のみログを出す（任意）
-            if old_mode != mode_id:
-                print(f"  Node {node_id:2d}: Mode {old_mode} -> {mode_id}")
+            if(params.show_mode_change):
+                # モードが変わった場合のみログを出す (show_mode_change=True時のみ)
+                if old_mode != mode_id:
+                    print(f"  Node {node_id:2d}: Mode {old_mode} -> {mode_id}")
         
     print(f"[Time {time}] Optimization complete.\n")
 
@@ -233,18 +234,20 @@ import json
 import os
 from visualize import TrafficVisualizer
 
-def simulation(car_count: int = 100):
+def simulation(params: SimulationParams):
     """
     シミュレーションのメインループを実行し、ログ保存とGIF生成を行う。
     """
     # 1. 初期化
-    mapinfo, edge_traffics, node_traffics = simulation_init(width=6, height=6, car_count=car_count)
+    mapinfo, edge_traffics, node_traffics = simulation_init(params, width=6, height=6, )
     
     # 記録用リソースの準備
     history = []
     viz = TrafficVisualizer(fps=5) # 1秒間に5ステップ進む設定
-    simulationtime = 100
     total_time_wasted=0.0
+    # シミュレーション時間と信号更新周期設定
+    simulationtime = params.simulation_time
+    signal_update=params.signal_update_span
 
     print(f"--- Simulation Started (T={simulationtime}) ---")
 
@@ -255,9 +258,9 @@ def simulation(car_count: int = 100):
         # 車両の移動
         update_edge_traffic(mapinfo, edge_traffics, node_traffics, dt=1.0)
         
-        # 信号モードの更新 (10ステップごと)
-        if time % 10 == 0: 
-            update_signal_modes(time, edge_traffics, node_traffics, mapinfo)
+        # 信号モードの更新 
+        if time % signal_update == 0: 
+            update_signal_modes(params ,time, edge_traffics, node_traffics, mapinfo)
         
         # 交差点での車両の通過
         update_node_traffic(mapinfo, edge_traffics, node_traffics)
