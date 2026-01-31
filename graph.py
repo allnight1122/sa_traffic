@@ -1,6 +1,6 @@
 from __future__ import annotations
 import random
-
+from typing import List
 
 
 class MapInfo:
@@ -8,7 +8,11 @@ class MapInfo:
     """
         マップ情報クラス
     """
-    def __init__(self, width: int, height: int):
+    def __init__(
+        self, width: int, height: int,
+        edge_length:float=1000,
+        edge_speed_limit_array:List[float]=[11.0, 17.0, 22.0, 28.0]
+    ):
         """
         Args: 
             width: マップ横幅
@@ -37,7 +41,7 @@ class MapInfo:
                 if key not in self._edges:
                     # 道路にランダムに制限速度を付す
                     # ここを偏向することで各エッジの制限速度を変更可能
-                    speed=random.choice([11.0, 17.0, 22.0, 28.0])
+                    speed=random.choice(edge_speed_limit_array)
                     
                     # マップ内最高速度の記録
                     if self._global_max_speed<speed: 
@@ -48,7 +52,7 @@ class MapInfo:
                         start_id=key[0],
                         end_id=key[1],
                         # 道路長設定
-                        length=1000.0,
+                        length=edge_length,
                         # 制限速度設定        
                         speed_limit=speed    
                     )
