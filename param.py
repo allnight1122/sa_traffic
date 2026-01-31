@@ -25,5 +25,5 @@ class SimulationParams:
     """シミュレーション時間設定"""
     show_mode_change: bool = False
     """SA実行後にモード変化をprintするか?"""
-    car_count=100
+    car_count: int=100
     """シミュレーション内の車の数"""
