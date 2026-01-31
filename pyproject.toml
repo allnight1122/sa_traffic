@@ -6,5 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "dimod>=0.12.21",
+    "ipython>=9.9.0",
     "matplotlib>=3.10.7",
 ]

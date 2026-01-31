@@ -229,26 +229,30 @@ def update_signal_modes(time: int, edge_traffics: Dict, node_traffics: Dict, map
         
     print(f"[Time {time}] Optimization complete.\n")
 
+import json
+import os
+from visualize import TrafficVisualizer
 
 def simulation(car_count: int = 100):
     """
-    シミュレーションのメインループを実行する。
+    シミュレーションのメインループを実行し、ログ保存とGIF生成を行う。
     """
-    # 初期化
+    # 1. 初期化
     mapinfo, edge_traffics, node_traffics = simulation_init(width=6, height=6, car_count=car_count)
-
-    # Time Wastedの記録リスト
-    time_wasted=[]
     
-    # シミュレーション時間設定
+    # 記録用リソースの準備
+    history = []
+    viz = TrafficVisualizer(fps=5) # 1秒間に5ステップ進む設定
     simulationtime = 100
-
+    total_time_wasted=0.0
 
     print(f"--- Simulation Started (T={simulationtime}) ---")
-    # メインループ開始
+
+    # 2. メインループ
     for time in range(simulationtime):
         
-        # 車両の移動と交差点への移動
+        # --- 物理演算・ロジック ---
+        # 車両の移動
         update_edge_traffic(mapinfo, edge_traffics, node_traffics, dt=1.0)
         
         # 信号モードの更新 (10ステップごと)
@@ -258,16 +262,42 @@ def simulation(car_count: int = 100):
         # 交差点での車両の通過
         update_node_traffic(mapinfo, edge_traffics, node_traffics)
 
-        # Time Wastedの計算. 
-        step_time_wasted=calc_step_timewasted(mapinfo, node_traffics)
+        # 指標計測
+        step_time_wasted = calc_step_timewasted(mapinfo, node_traffics)
+        print(f"\r[Time {time}] Time Waste: {step_time_wasted}", end="")
+        total_time_wasted+=step_time_wasted
 
-        print(f"\n[Time {time}] TIme Waste: {step_time_wasted}")
-        time_wasted.append(step_time_wasted)
+        # --- 3. ログデータの構築 (JSON用) ---
+        step_data = {
+            "time": time,
+            "timewasted": step_time_wasted,
+            "nodes": {
+                node_id: {
+                    "mode": nt.mode,
+                    "queues": {dir_key: list(q) for dir_key, q in nt.queues.items()}
+                } for node_id, nt in node_traffics.items()
+            },
+            "edges": {
+                f"{k[0]}_{k[1]}": [round(v, 2) for v in et.vehicles]
+                for k, et in edge_traffics.items()
+            }
+        }
+        history.append(step_data)
 
-        # 視覚化
-        visualize.visualize_simulation_step(mapinfo, edge_traffics, node_traffics, time)
+        # --- 4. 可視化フレームのキャプチャ ---
+        # 毎フレームキャプチャしてGIFの滑らかさを確保
+        viz.capture(mapinfo, edge_traffics, node_traffics, time)
 
+    print("\n--- Simulation Finished ---")
+    print(f"Total Time Waste: {total_time_wasted:10.2f}")
+    print("")
 
+    # --- 5. 結果の保存と出力 ---
+    # JSONログ出力
+    os.makedirs("results", exist_ok=True)
+    with open("results/simulation_log.json", "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2)
+    print("Log saved to results/simulation_log.json")
 
-    print("--- Simulation Finished ---")
-
+    # GIF出力 (Colabなら自動表示)
+    viz.save_gif("results/simulation.gif")
