@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 from typing import List
 
 @dataclass
-class SimulationParams:
-    lambda1: float=1
+class Coefficient:
+    lambda1: float=1.0
     """Q1 の係数"""
-    lambda2: float=60
+    lambda2: float=60.0
     """Q2 の係数"""
     lambda2t: float=0.3
     """Q2 の内部項係数 (プライム付きlambda_3)"""
@@ -13,17 +13,27 @@ class SimulationParams:
     """Q2 の内部項係数 (プライムなしlambda_3)"""
     lambda3: float=1e6
     """Q3 の内部項係数 (論文内lambda_4)"""
+
+@dataclass
+class MapGenerationParam:
     edge_length: float=1000
     """道路長"""
     edge_speed_limit_array: List[float] = field(
         default_factory=lambda: [11.0, 17.0, 22.0, 28.0]
     )
     """道路制限速度. このリストからランダムにchoiceされる"""
+    car_count: int=100
+    """シミュレーション内の車の数"""
+
+@dataclass
+class SimulationParams:
+
     signal_update_span: int=10
     """信号の更新ステップ数"""
     simulation_time: int=100
     """シミュレーション時間設定"""
     show_mode_change: bool = False
     """SA実行後にモード変化をprintするか?"""
-    car_count: int=100
-    """シミュレーション内の車の数"""
+
+
+

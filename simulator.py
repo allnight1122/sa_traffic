@@ -7,7 +7,7 @@ from typing import Dict, Tuple, List, Any
 import pdb
 import visualize
 import solving.solve_sa
-from param import SimulationParams
+from param import SimulationParams, MapGenerationParam, Coefficient
 
 
 
@@ -110,11 +110,11 @@ def calc_step_timewasted(mapinfo: MapInfo, node_traffics: Dict) -> float:
 
 # --- メインロジック ---
 
-def simulation_init(params: SimulationParams, width: int = 6, height: int = 6, ) -> Tuple[MapInfo, Dict[Tuple[int, int], EdgeTraffic], Dict[int, NodeTraffic]]:
+def simulation_init(mapgenparam :MapGenerationParam, width: int = 6, height: int = 6, ) -> Tuple[MapInfo, Dict[Tuple[int, int], EdgeTraffic], Dict[int, NodeTraffic]]:
     """
     シミュレーションの初期設定: マップ、交通オブジェクトの生成、車両の初期配置
     """  
-    mapinfo = MapInfo(width, height, params.edge_length, params.edge_speed_limit_array)
+    mapinfo = MapInfo(width, height, mapgenparam.edge_length, mapgenparam.edge_speed_limit_array)
 
     node_traffics: Dict[int, NodeTraffic] = {} 
     edge_traffics: Dict[Tuple[int, int], EdgeTraffic] = {}
@@ -130,7 +130,7 @@ def simulation_init(params: SimulationParams, width: int = 6, height: int = 6, )
         node_traffics[node_id] = NodeTraffic()
 
     # 車をランダムに設置する
-    for _ in range(params.car_count):
+    for _ in range(mapgenparam.car_count):
         edge_key = random.choice(list(edge_traffics.keys()))
         edge_traffic = edge_traffics[edge_key]
 
@@ -205,7 +205,7 @@ def update_node_traffic(mapinfo: MapInfo, edge_traffics: Dict, node_traffics: Di
                 # 新たにエッジに車両を追加（位置 x=0.0）
                 edge_traffics[edge_key].vehicles.append(0.0)
 
-def update_signal_modes(params: SimulationParams,time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo):
+def update_signal_modes(simparams: SimulationParams,coefficient:Coefficient ,time: int,  edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo):
     """
     信号モードを更新する。
     """
@@ -216,42 +216,40 @@ def update_signal_modes(params: SimulationParams,time: int, edge_traffics: Dict,
         
     # solve_main を実行して新しいモード配置を取得
     # (solve_main 内で q1, q2, q3 が呼び出され、dimod で解かれる)
-    new_modes = solving.solve_sa.solve_main(params, time, edge_traffics, node_traffics, mapinfo)
+    new_modes = solving.solve_sa.solve_main(coefficient, time, edge_traffics, node_traffics, mapinfo)
         
         # 取得した辞書 {node_id: mode_id} を実際のノード状態に反映
     for node_id, mode_id in new_modes.items():
         if node_id in node_traffics:
             old_mode = node_traffics[node_id].mode
             node_traffics[node_id].mode = mode_id
-            if(params.show_mode_change):
+            if(simparams.show_mode_change):
                 # モードが変わった場合のみログを出す (show_mode_change=True時のみ)
                 if old_mode != mode_id:
                     print(f"  Node {node_id:2d}: Mode {old_mode} -> {mode_id}")
         
     print(f"[Time {time}] Optimization complete.\n")
 
-import json
-import os
+
 from visualize import TrafficVisualizer
 
-def simulation(params: SimulationParams):
+def simulation(simparams: SimulationParams, coefficient :Coefficient , mapinfo: MapInfo, edge_traffics: Dict[Tuple[int, int], EdgeTraffic], node_traffics: Dict[int, NodeTraffic]) -> List:
     """
     シミュレーションのメインループを実行し、ログ保存とGIF生成を行う。
     """
-    # 1. 初期化
-    mapinfo, edge_traffics, node_traffics = simulation_init(params, width=6, height=6, )
     
+
     # 記録用リソースの準備
     history = []
     viz = TrafficVisualizer(fps=5) # 1秒間に5ステップ進む設定
     total_time_wasted=0.0
     # シミュレーション時間と信号更新周期設定
-    simulationtime = params.simulation_time
-    signal_update=params.signal_update_span
+    simulationtime = simparams.simulation_time
+    signal_update=simparams.signal_update_span
 
     print(f"--- Simulation Started (T={simulationtime}) ---")
 
-    # 2. メインループ
+    # メインループ
     for time in range(simulationtime):
         
         # --- 物理演算・ロジック ---
@@ -260,7 +258,7 @@ def simulation(params: SimulationParams):
         
         # 信号モードの更新 
         if time % signal_update == 0: 
-            update_signal_modes(params ,time, edge_traffics, node_traffics, mapinfo)
+            update_signal_modes(simparams, coefficient ,time, edge_traffics, node_traffics, mapinfo)
         
         # 交差点での車両の通過
         update_node_traffic(mapinfo, edge_traffics, node_traffics)
@@ -270,7 +268,7 @@ def simulation(params: SimulationParams):
         print(f"\r[Time {time}] Time Waste: {step_time_wasted}", end="")
         total_time_wasted+=step_time_wasted
 
-        # --- 3. ログデータの構築 (JSON用) ---
+        # ログ用オブジェクト
         step_data = {
             "time": time,
             "timewasted": step_time_wasted,
@@ -287,20 +285,14 @@ def simulation(params: SimulationParams):
         }
         history.append(step_data)
 
-        # --- 4. 可視化フレームのキャプチャ ---
+        # 可視化フレームのキャプチャ
         # 毎フレームキャプチャしてGIFの滑らかさを確保
         viz.capture(mapinfo, edge_traffics, node_traffics, time)
 
-    print("\n--- Simulation Finished ---")
+    print("\n--- Simulation Finished ---\n")
     print(f"Total Time Waste: {total_time_wasted:10.2f}")
-    print("")
-
-    # --- 5. 結果の保存と出力 ---
-    # JSONログ出力
-    os.makedirs("results", exist_ok=True)
-    with open("results/simulation_log.json", "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=2)
-    print("Log saved to results/simulation_log.json")
 
     # GIF出力 (Colabなら自動表示)
     viz.save_gif("results/simulation.gif")
+
+    return history

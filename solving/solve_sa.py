@@ -3,7 +3,7 @@ from traffic import *
 from typing import Dict, Tuple, List, Any
 import numpy as np
 import dimod
-from param import SimulationParams
+from param import Coefficient
 
 
 MODE_KIND=6
@@ -77,7 +77,7 @@ TAU_THRESHOLD = 2.0
 """
 
 def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo,
-        lambda_2, lambda2t, lambda2f) -> np.array:
+        lambda_2: float, lambda2t: float, lambda2f: float) -> np.array:
     """
     Q2(論文準拠)の計算をするメソッド
     """
@@ -180,15 +180,20 @@ def q3(edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo, lambda_3) -> 
 
 
 
-def solve_main(params: SimulationParams, time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> Dict[int, int]:
+def solve_main(coefficient: Coefficient, time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo) -> Dict[int, int]:
     """
     SAで解くメイン実装
-    QUBO matrixの生成, dimodによるSA求解, node-mode形式の辞書オブジェクト生成までをおこない, 辞書を返す
+    QUBO matrixの生成, dimodによるSA求解, node-mode形式の辞書オブジェクト生成までをおこない, 
+    各ノードidのキーと, そのノードのモードについての辞書を返す
 
     Parameters
     ----------
+    coefficient: Coefficient
+      QUBOのための係数群
     time : int
-        シミュレーション内時間
+      シミュレーション内時間
+    
+    
 
     """
 
@@ -196,10 +201,10 @@ def solve_main(params: SimulationParams, time: int, edge_traffics: Dict, node_tr
 
     q_matrix=np.zeros((matrix_length, matrix_length), dtype=float)
 
-    q_matrix+=q1(edge_traffics, node_traffics, mapinfo, params.lambda1)
+    q_matrix+=q1(edge_traffics, node_traffics, mapinfo, coefficient.lambda1)
     q_matrix+=q2(time, edge_traffics, node_traffics, mapinfo, 
-                 params.lambda2, params.lambda2t, params.lambda2f)
-    q_matrix+=q3(edge_traffics, node_traffics, mapinfo, params.lambda3)
+                 coefficient.lambda2, coefficient.lambda2t, coefficient.lambda2f)
+    q_matrix+=q3(edge_traffics, node_traffics, mapinfo, coefficient.lambda3)
 
     qubo_dict={}
     rows, cols=np.nonzero(q_matrix)
