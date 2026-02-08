@@ -8,21 +8,21 @@ import numpy as np
 from traffic import FLOW_TO, MODE_FLOW
 from collections import Counter
 
-# MatplotlibのバックエンドをAggに固定し、画面表示を抑制
-import matplotlib
-matplotlib.use('Agg')
+# --- ここでインポート ---
+try:
+    from IPython.display import display, Image as IPImage
+    from IPython import get_ipython
+    HAS_IPYTHON = True
+except ImportError:
+    HAS_IPYTHON = False
+# ----------------------
+
+
 
 # グラフ情報・交通情報のインポート（構造のみ必要）
 from graph import MapInfo 
 from traffic import MODE_FLOW 
 
-# --- 描画関連定数 ---
-NODE_DISPLAY_RADIUS = 0.15 # ノード自体の見た目の半径 (描画単位)
-LANE_WIDTH_FACTOR = 0.08   # 車線の見た目の幅 (描画単位)
-VEHICLE_SIZE = 3           # 車両のマーカーサイズ
-ARROW_HEAD_WIDTH = 0.15    # 信号矢印の頭の幅
-ARROW_HEAD_LENGTH = 0.2    # 信号矢印の頭の長さ
-QUEUE_TEXT_OFFSET = 0.4    # 待機車両テキストのノードからのオフセット
 
 
 # クラス外またはクラス内で定義
@@ -201,13 +201,10 @@ class TrafficVisualizer:
         plt.close(fig) # メモリ解放
         return img
     
-    def create_animation(self, history: List[Dict[str, Any]], mapinfo: Any, output_dir: str = "results"):
+    def create_animation(self, history: List[Dict[str, Any]], mapinfo: Any):
         """history全体を処理してGIFを保存し、Colabなら表示する"""
         
-        # 1. 保存先ディレクトリの作成
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            print(f"Created directory: {output_dir}")
+
 
         frames = []
         print(f"Generating {len(history)} frames...")
@@ -222,29 +219,59 @@ class TrafficVisualizer:
         if not frames:
             print("No frames generated.")
             return
-
-        # 3. GIFとして保存
-        output_path = os.path.join(output_dir, "simulation.gif")
-        # durationはミリ秒単位。fpsから計算。
-        frame_duration = int(1000 / self.fps)
         
-        frames[0].save(
+        self.frames= frames
+
+    def save_animation(self, output_path: str="results/simulation.gif") -> str:
+        if not self.frames:
+            print("No frames to save.")
+            return ""
+
+        output_dir = os.path.dirname(output_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        frame_duration = int(1000 / self.fps)
+        self.frames[0].save(
             output_path,
             save_all=True,
-            append_images=frames[1:],
+            append_images=self.frames[1:],
             duration=frame_duration,
             loop=0
         )
         print(f"Animation saved to: {output_path}")
-
-        # 4. Colab環境での表示処理
+        return output_path
+    
+    def show_animation(self, file_path: str = "results/simulation.gif"):
+        """
+        Colab/Jupyter上で`file_path`で指定したGIFを表示する
+        """
+        if not (HAS_IPYTHON and get_ipython() is not None):
+            print("Inline display is only available in Notebook environments.")
+            return
+        
         try:
-            # Colab/Jupyter環境かどうかチェック
-            from IPython import get_ipython
-            if get_ipython() is not None:
-                with open(output_path, "rb") as f:
+            if file_path and os.path.exists(file_path):
+                # ファイルから表示
+                with open(file_path, "rb") as f:
                     display(IPImage(data=f.read(), format='png'))
-        except ImportError:
-            pass
+            elif self.frames:
+                # メモリ上の self.frames から直接GIFを生成して表示
+                buf = io.BytesIO()
+                frame_duration = int(1000 / self.fps)
+                self.frames[0].save(
+                    buf,
+                    format='GIF',
+                    save_all=True,
+                    append_images=self.frames[1:],
+                    duration=frame_duration,
+                    loop=0
+                )
+                display(IPImage(data=buf.getvalue(), format='png'))
+            else:
+                print("No frames or file to display.")
+        except Exception as e:
+            print(f"Display error: {e}")
 
-        return output_path    
+    def clear_frames(self):
+        self.frames=[]
