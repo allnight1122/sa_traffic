@@ -241,7 +241,7 @@ def simulation(simparams: SimulationParams, coefficient :Coefficient , mapinfo: 
 
     # 記録用リソースの準備
     history = []
-    viz = TrafficVisualizer(fps=5) # 1秒間に5ステップ進む設定
+
     total_time_wasted=0.0
     # シミュレーション時間と信号更新周期設定
     simulationtime = simparams.simulation_time
@@ -287,12 +287,11 @@ def simulation(simparams: SimulationParams, coefficient :Coefficient , mapinfo: 
 
         # 可視化フレームのキャプチャ
         # 毎フレームキャプチャしてGIFの滑らかさを確保
-        viz.capture(mapinfo, edge_traffics, node_traffics, time)
+        # viz.capture(mapinfo, edge_traffics, node_traffics, time)
 
     print("\n--- Simulation Finished ---\n")
     print(f"Total Time Waste: {total_time_wasted:10.2f}")
 
-    # GIF出力 (Colabなら自動表示)
-    viz.save_gif("results/simulation.gif")
+
 
     return history

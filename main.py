@@ -1,5 +1,6 @@
 from graph import *
 from simulator import simulation, simulation_init
+from visualize import TrafficVisualizer
 import json
 import os
 
@@ -10,8 +11,14 @@ def main(simparams: SimulationParams, coefficient: Coefficient, mapgenparam: Map
     mapinfo, edge_traffics, node_traffics = simulation_init(mapgenparam, width=6, height=6)
     
 
+
     history = simulation(simparams, coefficient , mapinfo, edge_traffics, node_traffics)
     savelog(history)
+    
+        # ループが終わった後に可視化を呼び出す
+    viz = TrafficVisualizer(fps=10)
+    viz.create_animation(history, mapinfo)
+    
     return history 
 
 

@@ -11,3 +11,4 @@ wheels/
 
 frames/
 results/
+*_test.py
