@@ -81,7 +81,11 @@ class TrafficVisualizer:
             
             xs, ys = self._get_node_coords(sid, mapinfo)
             xe, ye = self._get_node_coords(eid, mapinfo)
-            print(f"{s_node.getId()}: E{s_node.east_id()} W{s_node.west_id()} N{s_node.north_id()} S{s_node.south_id()}")
+            
+            # 以下デバッグ用テキスト
+            # print(f"{s_node.getId()}: E{s_node.east_id()} W{s_node.west_id()} N{s_node.north_id()} S{s_node.south_id()}")
+            
+            
             # 方角ベクトルの決定 (sidから見たeidの方向)
             if eid == s_node.north_id():   dx, dy = 0, -1
             elif eid == s_node.south_id(): dx, dy = 0, 1
