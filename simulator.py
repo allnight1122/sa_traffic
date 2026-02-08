@@ -14,57 +14,48 @@ from param import SimulationParams, MapGenerationParam, Coefficient
 
 def determine_direction(from_id: int, to_id: int, mapinfo: MapInfo) -> int:
     """
-    to_id の交差点への進入方向（進入元）を決定する。
+    to_id の交差点への進入方向（進入元）を決定する. 
+
     1:北から進入, 2:南から進入, 3:東から進入, 4:西から進入
     （トーラス構造に対応）
+
+    to_idノードに対するfrom_idノードの位置を返す
     """
     to_node = mapinfo.getNode(to_id)
-    
-    # to_nodeから見て、from_idがどの方向にあるかを判定する
-    if to_node.north_id() == from_id:
-        return 2 # from_idはto_nodeの南にある -> to_nodeへは南から進入 (方向2)
+
+    if   to_node.north_id() == from_id:
+        return 1
     elif to_node.south_id() == from_id:
-        return 1 # from_idはto_nodeの北にある -> to_nodeへは北から進入 (方向1)
-    elif to_node.east_id() == from_id:
-        return 4 # from_idはto_nodeの西にある -> to_nodeへは西から進入 (方向4)
-    elif to_node.west_id() == from_id:
-        return 3 # from_idはto_nodeの東にある -> to_nodeへは東から進入 (方向3)
+        return 2
+    elif to_node.east_id()  == from_id:
+        return 3
+    elif to_node.west_id()  == from_id:
+        return 4
     
-    return 0 
+    return None
+    
+
+
 
 
 def get_next_node(current_node: Node, direction: int, turn: str) -> Node | None:
     """
     交差点（current_node）を通過後、次に車が進むノードを返す。
     """
-    if direction == 1: # 北 (進入元)
-        if turn == "straight":
-            return current_node.south_node() # 直進 -> 南へ
-        elif turn == "right":
-            return current_node.east_node()  # 右折 -> 東へ
-        elif turn == "left":
-            return current_node.west_node()  # 左折 -> 西へ
-    elif direction == 2: # 南 (進入元)
-        if turn == "straight":
-            return current_node.north_node() # 直進 -> 北へ
-        elif turn == "right":
-            return current_node.west_node()  # 右折 -> 西へ
-        elif turn == "left":
-            return current_node.east_node()  # 左折 -> 東へ
-    elif direction == 3: # 東 (進入元)
-        if turn == "straight":
-            return current_node.west_node()  # 直進 -> 西へ
-        elif turn == "right":
-            return current_node.south_node() # 右折 -> 南へ
-        elif turn == "left":
-            return current_node.north_node() # 左折 -> 北へ
-    elif direction == 4: # 西 (進入元)
-        if turn == "straight":
-            return current_node.east_node()  # 直進 -> 東へ
-        elif turn == "right":
-            return current_node.north_node() # 右折 -> 北へ
-        elif turn == "left":
-            return current_node.south_node() # 左折 -> 南へ
+
+    next_direction = FLOW_TO.get((direction, turn))
+
+    if next_direction is None:
+        return None
+
+    if   next_direction == 1:
+        return current_node.north_node()
+    elif next_direction == 2:
+        return current_node.south_node()
+    elif next_direction == 3:
+        return current_node.east_node()
+    elif next_direction == 4:
+        return current_node.west_node()
     return None
 
 def calc_mode(time: int, edge_traffics: Dict, node_traffics: Dict) -> Dict[int, int]:

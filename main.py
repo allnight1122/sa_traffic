@@ -18,6 +18,7 @@ def main(simparams: SimulationParams, coefficient: Coefficient, mapgenparam: Map
         # ループが終わった後に可視化を呼び出す
     viz = TrafficVisualizer(fps=10)
     viz.create_animation(history, mapinfo)
+    viz.save_animation()
     
     return history 
 
