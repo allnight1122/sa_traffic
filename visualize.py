@@ -242,36 +242,27 @@ class TrafficVisualizer:
         print(f"Animation saved to: {output_path}")
         return output_path
     
-    def show_animation(self, file_path: str = "results/simulation.gif"):
+    def show_animation(self):
         """
-        Colab/Jupyter上で`file_path`で指定したGIFを表示する
+        Colab/Jupyter上でframesをもとにGIFを表示する
         """
         if not (HAS_IPYTHON and get_ipython() is not None):
             print("Inline display is only available in Notebook environments.")
             return
-        
-        try:
-            if file_path and os.path.exists(file_path):
-                # ファイルから表示
-                with open(file_path, "rb") as f:
-                    display(IPImage(data=f.read(), format='png'))
-            elif self.frames:
-                # メモリ上の self.frames から直接GIFを生成して表示
-                buf = io.BytesIO()
-                frame_duration = int(1000 / self.fps)
-                self.frames[0].save(
-                    buf,
-                    format='GIF',
-                    save_all=True,
-                    append_images=self.frames[1:],
-                    duration=frame_duration,
-                    loop=0
-                )
-                display(IPImage(data=buf.getvalue(), format='png'))
-            else:
-                print("No frames or file to display.")
-        except Exception as e:
-            print(f"Display error: {e}")
+        if not self.frames:
+            print("No frames to display. Run create_animation() first.")
+        buf = io.BytesIO()
+        frame_duration = int(1000 / self.fps)
+        self.frames[0].save(
+            buf,
+            format='GIF',
+            save_all=True,
+            append_images=self.frames[1:],
+            duration=frame_duration,
+            loop=0
+        )
+        display(IPImage(data=buf.getvalue(), format='png'))
+
 
     def clear_frames(self):
         self.frames=[]
