@@ -74,7 +74,7 @@ MODE_RELATIONS = {
 
 
 def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo,
-        lambda_2: float, lambda2t: float, lambda2f: float, tau_threshold: int) -> np.array:
+        lambda_2: float, lambda2t: float, lambda2f: float, tau_threshold: float) -> np.array:
     """
     Q2(論文準拠)の計算をするメソッド
     """
