@@ -71,13 +71,10 @@ MODE_RELATIONS = {
 元論文における, {a', b', c', d'}と{a, b, c, d}のリスト
 """
 
-TAU_THRESHOLD = 2.0
-"""
-元論文$t mod T approx 0$を判定するための許容範囲
-"""
+
 
 def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo,
-        lambda_2: float, lambda2t: float, lambda2f: float) -> np.array:
+        lambda_2: float, lambda2t: float, lambda2f: float, tau_threshold: int) -> np.array:
     """
     Q2(論文準拠)の計算をするメソッド
     """
@@ -132,7 +129,7 @@ def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo,
                 remainder = time % time_need
                 # 実質的なtauの特定
                 # 結果が偽であればtau=0なので, 以降の処理を省略して次ループへ
-                if not((remainder <= TAU_THRESHOLD) or (abs(time_need - remainder) <= TAU_THRESHOLD)): continue
+                if not((remainder <= tau_threshold) or (abs(time_need - remainder) <= tau_threshold)): continue
 
                 c_neighbor=get_flowable_count(neighbor_id, preferred_mode)
                 # 重み(元論文lambda3 or lambda3')
@@ -203,7 +200,8 @@ def solve_main(coefficient: Coefficient, time: int, edge_traffics: Dict, node_tr
 
     q_matrix+=q1(edge_traffics, node_traffics, mapinfo, coefficient.lambda1)
     q_matrix+=q2(time, edge_traffics, node_traffics, mapinfo, 
-                 coefficient.lambda2, coefficient.lambda2t, coefficient.lambda2f)
+                 coefficient.lambda2, coefficient.lambda2t, coefficient.lambda2f, 
+                 coefficient.tau_threshold)
     q_matrix+=q3(edge_traffics, node_traffics, mapinfo, coefficient.lambda3)
 
     qubo_dict={}

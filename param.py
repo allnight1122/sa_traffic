@@ -13,6 +13,8 @@ class Coefficient:
     """Q2 の内部項係数 (プライムなしlambda_3)"""
     lambda3: float=1e6
     """Q3 の内部項係数 (論文内lambda_4)"""
+    tau_threshold = 2.0
+    """元論文$t mod T approx 0$を判定するための許容範囲    """
 
 @dataclass
 class MapGenerationParam:
