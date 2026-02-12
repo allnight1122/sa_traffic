@@ -7,7 +7,7 @@ from typing import Dict, Tuple, List, Any
 import pdb
 import visualize
 import solving.solve_sa
-from param import SimulationParams, MapGenerationParam, Coefficient
+from param import *
 
 
 
@@ -58,17 +58,29 @@ def get_next_node(current_node: Node, direction: int, turn: str) -> Node | None:
         return current_node.west_node()
     return None
 
-def calc_mode(time: int, edge_traffics: Dict, node_traffics: Dict) -> Dict[int, int]:
+def calc_mode_fixedcycle(time: int, edge_traffics: Dict, node_traffics: Dict) -> Dict[int, int]:
     """
     信号モード切り替えのロジック (固定サイクル)
 
-    推奨される信号モードセットを返す
+    固定サイクルによる信号モードを返す
     """
     mode_dict = {}
     for node_id in node_traffics:
-        # 10ステップごとにモードを切り替え (1〜6を順に繰り返す)
-        # 次のステップはここの実装をSAをつかって実装する予定になる. 
+        # 呼び出しごとにモードを切り替え (1〜6を順に繰り返す) 
         mode_dict[node_id] = (time // 10) % 6 + 1 
+    return mode_dict
+
+def calc_mode_randomcycle(time: int, edge_traffics: Dict, node_Traffics: Dict) -> Dict[int, int]:
+    """
+    信号モード切り替えのロジック (完全ランダム制)
+
+    ランダムサイクルによる信号モードを返す
+    """
+    
+    mode_dict = {}
+    for node_id in node_Traffics:
+        # 呼び出しごとにモードをランダムに割り当て
+        mode_dict[node_id]= random.randint(1, 6)
     return mode_dict
 
 def calc_step_timewasted(mapinfo: MapInfo, node_traffics: Dict) -> float:
@@ -119,6 +131,10 @@ def simulation_init(mapgenparam :MapGenerationParam, width: int = 6, height: int
 
     for node_id in range(width * height):
         node_traffics[node_id] = NodeTraffic()
+        if mapgenparam.inital_signal==INITAL_SIGNAL_RANDOM: 
+            node_traffics[node_id].mode=random.randint(1, 6)
+        else:
+            node_traffics[node_id].mode=mapgenparam.inital_signal
 
     # 車をランダムに設置する
     for _ in range(mapgenparam.car_count):
@@ -202,14 +218,22 @@ def update_signal_modes(simparams: SimulationParams,coefficient:Coefficient ,tim
     """
     # new_modes = calc_mode(time, edge_traffics, node_traffics)
 
+    if simparams.update_strategy==UPDATE_STRATEGY_FIXED: 
+        new_modes = calc_mode_fixedcycle(time, edge_traffics, node_traffics)
+    elif simparams.update_strategy==UPDATE_STRATEGY_QUBO:
+        print(f"\n[Time {time}] Starting SA Optimization...")
+        
+        # solve_main を実行して新しいモード配置を取得
+        # (solve_main 内で q1, q2, q3 が呼び出され、dimod で解かれる)
+        new_modes = solving.solve_sa.solve_main(coefficient, time, edge_traffics, node_traffics, mapinfo)
+        
 
-    print(f"\n[Time {time}] Starting SA Optimization...")
-        
-    # solve_main を実行して新しいモード配置を取得
-    # (solve_main 内で q1, q2, q3 が呼び出され、dimod で解かれる)
-    new_modes = solving.solve_sa.solve_main(coefficient, time, edge_traffics, node_traffics, mapinfo)
-        
-        # 取得した辞書 {node_id: mode_id} を実際のノード状態に反映
+            
+        print(f"[Time {time}] Optimization complete.")
+    else: 
+        new_modes=calc_mode_randomcycle(time,edge_traffics,node_traffics)
+    
+    # 取得した辞書 new_modes={node_id: mode_id} を実際のノード状態に反映
     for node_id, mode_id in new_modes.items():
         if node_id in node_traffics:
             old_mode = node_traffics[node_id].mode
@@ -218,8 +242,7 @@ def update_signal_modes(simparams: SimulationParams,coefficient:Coefficient ,tim
                 # モードが変わった場合のみログを出す (show_mode_change=True時のみ)
                 if old_mode != mode_id:
                     print(f"  Node {node_id:2d}: Mode {old_mode} -> {mode_id}")
-        
-    print(f"[Time {time}] Optimization complete.\n")
+
 
 
 from visualize import TrafficVisualizer
@@ -248,7 +271,7 @@ def simulation(simparams: SimulationParams, coefficient :Coefficient , mapinfo: 
         update_edge_traffic(mapinfo, edge_traffics, node_traffics, dt=1.0)
         
         # 信号モードの更新 
-        if time % signal_update == 0: 
+        if time % signal_update == 0 and time>0: 
             update_signal_modes(simparams, coefficient ,time, edge_traffics, node_traffics, mapinfo)
         
         # 交差点での車両の通過

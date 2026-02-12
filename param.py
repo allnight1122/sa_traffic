@@ -1,5 +1,17 @@
 from dataclasses import dataclass, field
 from typing import List
+from enum import Enum
+
+
+UPDATE_STRATEGY_QUBO = 0
+"""`SimulationParams.update_strategy`にて, quboによる最適化を選択する定数"""
+UPDATE_STRATEGY_FIXED = 1
+"""`SimulationParams.update_strategy`にて, 固定サイクルによる信号更新を選択する定数 (モードを+1ずつ)"""
+UPDATE_STRATEGY_RANDOM = 2
+"""`SimulationParams.update_strategy`にて, 完全ランダムによる信号更新を選択する定数 """
+INITAL_SIGNAL_RANDOM = 0
+"""`MapGenerationParam.inital_signal`にて, 完全ランダムな信号初期化を要求する定数"""
+
 
 @dataclass
 class Coefficient:
@@ -26,10 +38,18 @@ class MapGenerationParam:
     """道路制限速度. このリストからランダムにchoiceされる"""
     car_count: int=100
     """シミュレーション内の車の数"""
+    inital_signal: int = INITAL_SIGNAL_RANDOM
 
 @dataclass
 class SimulationParams:
+    update_strategy: int = UPDATE_STRATEGY_QUBO
+    """
+    信号更新の方針
 
+    - 0: quboによる最適化
+    - 1: 固定サイクルによる信号更新
+    - 2: 完全ランダムによる信号更新
+    """
     signal_update_span: int=10
     """信号の更新ステップ数"""
     simulation_time: int=100
