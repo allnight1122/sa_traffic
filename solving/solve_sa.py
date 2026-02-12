@@ -83,7 +83,7 @@ def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo,
     q_matrix=np.zeros((matrix_length, matrix_length), dtype=float)
     
     # まずは各ノードの交差点状況を取得する
-    for node_id in range(mapinfo.width(), mapinfo.height()):
+    for node_id in range(mapinfo.width()*mapinfo.height()):
         node_traffic = node_traffics.get(node_id)
 
         if not node_traffic: continue
@@ -131,7 +131,7 @@ def q2(time: int, edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo,
                 # 結果が偽であればtau=0なので, 以降の処理を省略して次ループへ
                 if not((remainder <= tau_threshold) or (abs(time_need - remainder) <= tau_threshold)): continue
 
-                c_neighbor=get_flowable_count(neighbor_id, preferred_mode)
+                c_neighbor=get_flowable_count(node_traffics[neighbor_id], preferred_mode)
                 # 重み(元論文lambda3 or lambda3')
                 weighting = lambda2t if is_prime else lambda2f
 
@@ -238,12 +238,12 @@ def solve_main(coefficient: Coefficient, time: int, edge_traffics: Dict, node_tr
         if num_active >= 1:
             selected_mode = active_indices[0] + 1
         else:
-            selected_mode = 1
+            selected_mode = active_indices[0] + 1
             
         node_mode_map[i] = selected_mode
 
     if total_violations > 0:
-        print(f"--- Summary: {total_violations}/{mapinfo.width+mapinfo.height} nodes had one-hot violations. ---")
+        print(f"--- Summary: {total_violations}/{mapinfo.width()*mapinfo.height()} nodes had one-hot violations. ---")
     else:
         print(f"--- SA Optimization Success: All nodes satisfied one-hot constraint. ---")
 
