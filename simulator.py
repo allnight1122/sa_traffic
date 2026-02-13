@@ -293,9 +293,9 @@ def simulation(simparams: SimulationParams, coefficient :Coefficient , mapinfo: 
         # 指標計測
         step_time_wasted = calc_step_timewasted(mapinfo, node_traffics)
 
-        outflow_ratio = step_flow_out / pre_outflow_waiting if pre_outflow_waiting > 0 else 0.0
+        flowout_ratio = step_flow_out / pre_outflow_waiting if pre_outflow_waiting > 0 else 0.0
         remain_ratio = post_outflow_waiting / pre_outflow_waiting if pre_outflow_waiting > 0 else 0.0
-        print(f"\r[Time {time}] Time Waste: {step_time_wasted: 8.3f} Outflow Ratio: {outflow_ratio: 4.2f} Remain Ratio: {remain_ratio: 4.2f}", end="")
+        print(f"\r[Time {time}] Time Waste: {step_time_wasted: 8.3f} Outflow Ratio: {flowout_ratio: 4.2f} Remain Ratio: {remain_ratio: 4.2f}", end="")
         total_time_wasted+=step_time_wasted
 
         # ログ用オブジェクト
@@ -304,7 +304,7 @@ def simulation(simparams: SimulationParams, coefficient :Coefficient , mapinfo: 
             "timewasted": step_time_wasted,
             "step_flow_out": step_flow_out,
             "pre_outflow_waiting": pre_outflow_waiting, 
-            "outflow_ratio": outflow_ratio, 
+            "flowout_ratio": flowout_ratio, 
             "remain_ratio": remain_ratio,
             "nodes": {
                 node_id: {
