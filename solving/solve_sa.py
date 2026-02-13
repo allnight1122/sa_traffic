@@ -211,13 +211,13 @@ def solve_main(coefficient: Coefficient, time: int, edge_traffics: Dict, node_tr
     
     if coefficient.sampler == SAMPLER_NEAL: 
         sampler = neal.SimulatedAnnealingSampler()
-        sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads)
+        sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads, num_sweeps=coefficient.num_sweeeps)
 
         best_sample=sampleset.first.sample
     else: 
             
         sampler = dimod.SimulatedAnnealingSampler()
-        sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads)
+        sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads, num_sweeps=coefficient.num_sweeeps)
 
         best_sample=sampleset.first.sample
 
