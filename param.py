@@ -31,7 +31,7 @@ class Coefficient:
     """元論文$t mod T approx 0$を判定するための許容範囲    """
     num_reads: int = 10
     """サンプリング数""",
-    num_sweeeps: int = 4000
+    num_sweeps: int = 4000
     """サンプリングの深さ"""
     sampler: int = SAMPLER_NEAL
 
