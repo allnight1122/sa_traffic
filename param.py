@@ -11,6 +11,8 @@ UPDATE_STRATEGY_RANDOM = 2
 """`SimulationParams.update_strategy`にて, 完全ランダムによる信号更新を選択する定数 """
 INITAL_SIGNAL_RANDOM = 0
 """`MapGenerationParam.inital_signal`にて, 完全ランダムな信号初期化を要求する定数"""
+SAMPLER_DIMOD = 0
+SAMPLER_NEAL = 1
 
 
 @dataclass
@@ -28,7 +30,10 @@ class Coefficient:
     tau_threshold:float = 2.0
     """元論文$t mod T approx 0$を判定するための許容範囲    """
     num_reads: int = 10
-    """サンプリング数"""
+    """サンプリング数""",
+    num_sweeeps: int = 4000
+    """サンプリングの深さ"""
+    sampler: int = SAMPLER_NEAL
 
 @dataclass
 class MapGenerationParam:

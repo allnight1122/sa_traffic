@@ -12,6 +12,7 @@ from param import *
 
 
 
+
 def determine_direction(from_id: int, to_id: int, mapinfo: MapInfo) -> int:
     """
     to_id の交差点への進入方向（進入元）を決定する. 

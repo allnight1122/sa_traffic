@@ -120,6 +120,46 @@ wheels = [
 ]
 
 [[package]]
+name = "dwave-neal"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dwave-samplers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/84/7c/e368bbddb111958f64d4fdd58d4a0e01f8dc16d56fe89c7abdb028fbb029/dwave-neal-0.6.0.tar.gz", hash = "sha256:8ce51fee3339195df1ab69920fdb5afc496b5fd945e487fad3547c983d90c564", size = 6418, upload-time = "2022-11-25T23:44:37.85Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/f2/32c45bcc42196f69f101549abf35fc6019ef3488c8d4082fbcab22d77274/dwave_neal-0.6.0-py3-none-any.whl", hash = "sha256:8b7d89f0c52de6ac80e0f580ec272f6409b1cf9edb12250d22429425a13bd935", size = 8730, upload-time = "2022-11-25T23:44:35.533Z" },
+]
+
+[[package]]
+name = "dwave-samplers"
+version = "1.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dimod" },
+    { name = "networkx" },
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/64/fc/d296b32104227ece6354ed486bb0434f9138eb7815739a7018d12a73dcc4/dwave_samplers-1.7.0.tar.gz", hash = "sha256:aee1174f8353816c237e31f760796bca7d90f3e7b882aa2e80cf28a2f5def4c2", size = 1533384, upload-time = "2025-10-28T17:25:13.004Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ee/4b/dc17844b387812106189223828b2b87b586f9bafa7231b39f4fc19286221/dwave_samplers-1.7.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:991c20db423bec9096d2932e8c9a3634c702518eb96d2f762fb3c7e26649241f", size = 2540814, upload-time = "2025-10-28T17:24:51.533Z" },
+    { url = "https://files.pythonhosted.org/packages/2d/57/3188a923cfa3b47ad00e6747408d2aa47aad245f489721d43d078ca49038/dwave_samplers-1.7.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:3ea2ac2d2152f1d0c2f029d6f360f6f292f71c493cbd05621b25ef48ef1aff53", size = 2508427, upload-time = "2025-10-28T17:24:52.724Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/ae/da17889d413809322d6fa3226bc7221b314577b21c6337a37049e397a3d5/dwave_samplers-1.7.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:fe2f5d6b3045a30be6946442a9ee30621c06cff92a4b9641df9bc1550dfb6401", size = 8736869, upload-time = "2025-10-28T17:24:53.842Z" },
+    { url = "https://files.pythonhosted.org/packages/13/6f/9efb2f8f726891fdcf1b807a4498fe9eef914427bdc61cf0d2ce8a696c54/dwave_samplers-1.7.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:ca3434ebe105d5ec7b3a7bf840b88e7f6a8f89e01a981b2ba52d464b9cf4c7b4", size = 8869687, upload-time = "2025-10-28T17:24:55.416Z" },
+    { url = "https://files.pythonhosted.org/packages/40/03/68b0718fc4d3e03009c68daec69fd787ad28886d899afc6e636f3cc490d1/dwave_samplers-1.7.0-cp313-cp313-win_amd64.whl", hash = "sha256:3399af6800418ab95d9560f5dc17c658246b3a645f65b5835e818ae510574c82", size = 2602291, upload-time = "2025-10-28T17:24:57.658Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/0f/e01597964178f39df8801983d2d88b9dbe5f38e7dd15417c6ea796a9c763/dwave_samplers-1.7.0-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:1cca0fbd2bd0261841d0804ed63d382e7de6d6dbc42c00ac7f6078faf2dca69f", size = 2542877, upload-time = "2025-10-28T17:24:58.719Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/d0/a748c38346ef120b9c702a651a31c45a1cc3f0fa666fef179a4e64ffc9e1/dwave_samplers-1.7.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:549d2cac098962577f2fc722fb1638dd8995e4d2144afc49a9c1ca569218ebde", size = 2515277, upload-time = "2025-10-28T17:24:59.8Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/ac/c06592622523278ba6b6e2fafbe2f5386434d605f43ab579d05b3e9aeab2/dwave_samplers-1.7.0-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:47e2ef972830496794d47d485d60489d4c0ac2963116e16d0b95209038d600f9", size = 8726353, upload-time = "2025-10-28T17:25:00.93Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/78/1d1eb36a2c592cabb2075bd6adb7f7a8e6c01b055ff5699865d1cae8650e/dwave_samplers-1.7.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:b6ed677c074ad6b769076cb3d36bae603f54ccc70f3f3ee1d5c361dec2d0124e", size = 8823508, upload-time = "2025-10-28T17:25:02.441Z" },
+    { url = "https://files.pythonhosted.org/packages/30/df/7dc78ca31f55828ae59c5f20e397d3665979a12db7f0c49e5a2f994923c4/dwave_samplers-1.7.0-cp314-cp314-win_amd64.whl", hash = "sha256:d6ea9d05e30c153f99c847b9bd27f58d5dd7d073fe955bba3af19a41ea766e70", size = 2620086, upload-time = "2025-10-28T17:25:11.939Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/b6/9d28446f8046ad90f04ecd2cfd52469e7945e4ffed98bdce90c18693a2d8/dwave_samplers-1.7.0-cp314-cp314t-macosx_10_15_x86_64.whl", hash = "sha256:fe811ebaffab70422e03393b8ca4b9f44c4e72e01e3f1b3f3818c50456baef2c", size = 2580236, upload-time = "2025-10-28T17:25:03.899Z" },
+    { url = "https://files.pythonhosted.org/packages/af/3d/2a090f3c0487c70a09075612682bd9f9631a84b086a05362dcddebd33792/dwave_samplers-1.7.0-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:7d59d3f38017441f464e1f0f2f12efa32b23a1c795a604040e61bad9b657c31e", size = 2564382, upload-time = "2025-10-28T17:25:05.099Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/ed/56bf4e6c35594464bfb9e38b5a790d78710706e099e6334e575d200109be/dwave_samplers-1.7.0-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:b6410169886115fab1d0e52916d120ea7d0b7338fb6e11e4cc8dfa2f79022ef5", size = 8923665, upload-time = "2025-10-28T17:25:06.61Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/56/464ee6e1c66ec92bb336b0eeaf93bd94c24572bd3553a4a6f2bfc3bc3412/dwave_samplers-1.7.0-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:f173a5dee29f351f2e8213e29aff32dde871585890ef53210a7271fd9ea42ec7", size = 8883387, upload-time = "2025-10-28T17:25:08.588Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/0b/713e7e629a5fad33cee8e3cd070754b2c0a771ffccbd31a22fae9d4f3434/dwave_samplers-1.7.0-cp314-cp314t-win_amd64.whl", hash = "sha256:539c1e577ea3bce7022a981e88ffa035284985b8208d6ec1f6cab74fb1191e82", size = 2735042, upload-time = "2025-10-28T17:25:10.22Z" },
+]
+
+[[package]]
 name = "executing"
 version = "2.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -322,6 +362,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c7/74/97e72a36efd4ae2bccb3463284300f8953f199b5ffbc04cbbb0ec78f74b1/matplotlib_inline-0.2.1.tar.gz", hash = "sha256:e1ee949c340d771fc39e241ea75683deb94762c8fa5f2927ec57c83c4dffa9fe", size = 8110, upload-time = "2025-10-23T09:00:22.126Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/af/33/ee4519fa02ed11a94aef9559552f3b17bb863f2ecfe1a35dc7f548cde231/matplotlib_inline-0.2.1-py3-none-any.whl", hash = "sha256:d56ce5156ba6085e00a9d54fead6ed29a9c47e215cd1bba2e976ef39f5710a76", size = 9516, upload-time = "2025-10-23T09:00:20.675Z" },
+]
+
+[[package]]
+name = "networkx"
+version = "3.6.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/51/63fe664f3908c97be9d2e4f1158eb633317598cfa6e1fc14af5383f17512/networkx-3.6.1.tar.gz", hash = "sha256:26b7c357accc0c8cde558ad486283728b65b6a95d85ee1cd66bafab4c8168509", size = 2517025, upload-time = "2025-12-08T17:02:39.908Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl", hash = "sha256:d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762", size = 2068504, upload-time = "2025-12-08T17:02:38.159Z" },
 ]
 
 [[package]]
@@ -530,15 +579,19 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "dimod" },
+    { name = "dwave-neal" },
     { name = "ipython" },
     { name = "matplotlib" },
+    { name = "numpy" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "dimod", specifier = ">=0.12.21" },
+    { name = "dwave-neal", specifier = ">=0.6.0" },
     { name = "ipython", specifier = ">=9.9.0" },
     { name = "matplotlib", specifier = ">=3.10.7" },
+    { name = "numpy", specifier = ">=2.3.4" },
 ]
 
 [[package]]

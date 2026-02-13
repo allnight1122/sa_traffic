@@ -3,8 +3,8 @@ from traffic import *
 from typing import Dict, Tuple, List, Any
 import numpy as np
 import dimod
-from param import Coefficient
-
+from param import Coefficient, SAMPLER_DIMOD, SAMPLER_NEAL
+import neal
 
 MODE_KIND=6
 """
@@ -209,10 +209,17 @@ def solve_main(coefficient: Coefficient, time: int, edge_traffics: Dict, node_tr
     for i, j in zip(rows, cols):
         qubo_dict[(int(i), int(j))]=q_matrix[i,j]
     
-    sampler = dimod.SimulatedAnnealingSampler()
-    sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads)
+    if coefficient.sampler == SAMPLER_NEAL: 
+        sampler = neal.SimulatedAnnealingSampler()
+        sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads)
 
-    best_sample=sampleset.first.sample
+        best_sample=sampleset.first.sample
+    else: 
+            
+        sampler = dimod.SimulatedAnnealingSampler()
+        sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads)
+
+        best_sample=sampleset.first.sample
 
     # 5. 解の形式を変換: {node_id: mode_id}
     node_mode_map = {}
