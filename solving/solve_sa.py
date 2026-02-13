@@ -210,7 +210,7 @@ def solve_main(coefficient: Coefficient, time: int, edge_traffics: Dict, node_tr
         qubo_dict[(int(i), int(j))]=q_matrix[i,j]
     
     sampler = dimod.SimulatedAnnealingSampler()
-    sampleset = sampler.sample_qubo(qubo_dict, num_reads=10)
+    sampleset = sampler.sample_qubo(qubo_dict, num_reads=coefficient.num_reads)
 
     best_sample=sampleset.first.sample
 

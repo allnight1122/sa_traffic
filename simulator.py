@@ -187,12 +187,18 @@ def update_edge_traffic(mapinfo: MapInfo, edge_traffics: Dict, node_traffics: Di
 def update_node_traffic(mapinfo: MapInfo, edge_traffics: Dict, node_traffics: Dict):
     """
     交差点キューの車両を信号とフローリミットに従って次エッジへ流出させる。
+
+    流出した車の総数を返す
     """
+    # 流出した車総数
+    total_flow_out=0
+
     for node_id, node_traffic in node_traffics.items():
         # 現在の信号モードで通過許可された車両群を取得
         flow_result = node_traffic.flow_by_mode()
 
         for (direction, turn), count in flow_result.items():
+            total_flow_out += count
             for _ in range(count):
                 current_node = mapinfo.getNode(node_id)
                 # 次に進むノード（流出先）を取得
@@ -211,6 +217,7 @@ def update_node_traffic(mapinfo: MapInfo, edge_traffics: Dict, node_traffics: Di
 
                 # 新たにエッジに車両を追加（位置 x=0.0）
                 edge_traffics[edge_key].vehicles.append(0.0)
+    return total_flow_out
 
 def update_signal_modes(simparams: SimulationParams,coefficient:Coefficient ,time: int,  edge_traffics: Dict, node_traffics: Dict, mapinfo: MapInfo):
     """
@@ -270,22 +277,34 @@ def simulation(simparams: SimulationParams, coefficient :Coefficient , mapinfo: 
         # 車両の移動
         update_edge_traffic(mapinfo, edge_traffics, node_traffics, dt=1.0)
         
+        # 流出前の待機車両総数を計測
+        # timewastedと異なり速度で重みづけされない
+        pre_outflow_waiting = sum(len(q) for nt in node_traffics.values() for q in nt.queues.values())
+
         # 信号モードの更新 
         if time % signal_update == 0 and time>0: 
             update_signal_modes(simparams, coefficient ,time, edge_traffics, node_traffics, mapinfo)
         
         # 交差点での車両の通過
-        update_node_traffic(mapinfo, edge_traffics, node_traffics)
-
+        step_flow_out = update_node_traffic(mapinfo, edge_traffics, node_traffics)
+        # 処理後の待機車両総数を計測
+        post_outflow_waiting = sum(len(q) for nt in node_traffics.values() for q in nt.queues.values())
         # 指標計測
         step_time_wasted = calc_step_timewasted(mapinfo, node_traffics)
-        print(f"\r[Time {time}] Time Waste: {step_time_wasted}", end="")
+
+        outflow_ratio = step_flow_out / pre_outflow_waiting if pre_outflow_waiting > 0 else 0.0
+        remain_ratio = post_outflow_waiting / pre_outflow_waiting if pre_outflow_waiting > 0 else 0.0
+        print(f"\r[Time {time}] Time Waste: {step_time_wasted: 8.3f} Outflow Ratio: {outflow_ratio: 4.2f} Remain Ratio: {remain_ratio: 4.2f}", end="")
         total_time_wasted+=step_time_wasted
 
         # ログ用オブジェクト
         step_data = {
             "time": time,
             "timewasted": step_time_wasted,
+            "step_flow_out": step_flow_out,
+            "pre_outflow_waiting": pre_outflow_waiting, 
+            "outflow_ratio": outflow_ratio, 
+            "remain_ratio": remain_ratio,
             "nodes": {
                 node_id: {
                     "mode": nt.mode,
