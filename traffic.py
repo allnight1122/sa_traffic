@@ -67,7 +67,7 @@ class NodeTraffic:
     """
     交差点（ノード）における交通状況（待機車両）を管理するクラス
     """
-    def __init__(self, flow_limit: int = 5):
+    def __init__(self, flow_limit: int = 10000):
         # 各方位に対して進行希望のリスト（キューとして機能する）
         # 進入方向: 1:北, 2:南, 3:東, 4:西
         self.queues: dict[int, list[str]] = {
